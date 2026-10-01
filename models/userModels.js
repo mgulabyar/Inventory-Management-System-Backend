@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please add a password'],
       minlength: 6,
-      select: false, // Default queries mein password hidden rahega
+      select: false, 
     },
     role: {
       type: String,
@@ -37,7 +37,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Password ko save karne se pehle hash (encrypt) karne ka middleware
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     next();
@@ -46,7 +45,6 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Entered password ko database hashed password se match karne ka method
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
