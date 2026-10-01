@@ -3,25 +3,33 @@ const dotenv = require('dotenv');
 const corsMiddleware = require('cors');
 require('colors');
 const connectDB = require('./config/db.js');
+const authRoutes = require('./routes/authRoutes.js');
 
+// Environment variables load
 dotenv.config();
 
+// Database initialization
 connectDB();
 
 const app = express();
 
+// Middlewares
 app.use(express.json());
 app.use(corsMiddleware());
 
+// Mount App Routes
+app.use('/api/auth', authRoutes);
+
+// Test Route
 app.get('/api/test', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Inventory System Backend Server is Running Smoothly with CommonJS!'
-  });
+    res.status(200).json({
+        success: true,
+        message: 'Inventory System Backend Server is Running Smoothly!'
+    });
 });
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
