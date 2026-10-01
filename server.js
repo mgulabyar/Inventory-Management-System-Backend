@@ -13,7 +13,6 @@ const app = express();
 app.use(express.json());
 app.use(corsMiddleware());
 
-// Test Route
 app.get('/api/test', (req, res) => {
   res.status(200).json({
     success: true,
