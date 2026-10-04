@@ -21,10 +21,10 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 
 app.get('/api/test', (req, res) => {
-  res.status(200).json({ success: true, message: 'Server Active with Clean Setup!' });
+    res.status(200).json({ success: true, message: 'Server Active with Clean Setup!' });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running smoothly on port ${PORT}`);
+    console.log(`Server running smoothly on port ${PORT}`);
 });
