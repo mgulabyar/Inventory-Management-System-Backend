@@ -18,7 +18,6 @@ const app = express();
 app.use(express.json());
 app.use(corsMiddleware());
 
-// Central Service Integrations pipeline mount
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
