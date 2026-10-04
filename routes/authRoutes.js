@@ -15,3 +15,6 @@ router.route('/users/:id')
   .delete(protect, authorize('SuperAdmin', 'Admin'), deleteUser);
 
 module.exports = router;
+
+
+

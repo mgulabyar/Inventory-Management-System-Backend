@@ -1,54 +1,63 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
-const protect = async (req, res, next) => {
-    let token;
-
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')
-    ) {
-        try {
+exports.protect = async (req, res, next) => {
+    try {
+        let token;
+        
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
-
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            if (decoded.email === process.env.SUPER_ADMIN_EMAIL) {
-                req.user = {
-                    name: 'Asfand',
-                    email: process.env.SUPER_ADMIN_EMAIL,
-                    role: 'SuperAdmin',
-                };
-                return next();
-            }
-
-            req.user = await User.findById(decoded.id);
-
-            if (!req.user || !req.user.isActive) {
-                return res.status(401).json({ success: false, message: 'Not authorized, user account disabled or not found' });
-            }
-
-            next();
-        } catch (error) {
-            return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
         }
-    }
 
-    if (!token) {
-        return res.status(401).json({ success: false, message: 'Not authorized, no token provided' });
+        if (!token) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Access Denied! No token provided.' 
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        if (decoded.email === process.env.SUPER_ADMIN_EMAIL) {
+            req.user = { 
+                id: 'superadmin_id', 
+                name: 'Super Admin', 
+                email: decoded.email, 
+                role: 'SuperAdmin' 
+            };
+            return next();
+        }
+
+        const user = await User.findById(decoded.id).select('-password');
+        if (!user || !user.isActive) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'User account disabled or not found!' 
+            });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Invalid or expired token!' 
+        });
     }
 };
 
-const authorize = (...roles) => {
+exports.authorize = (...roles) => {
     return (req, res, next) => {
+        if (req.user && req.user.role === 'SuperAdmin') {
+            return next();
+        }
+
         if (!req.user || !roles.includes(req.user.role)) {
-            return res.status(403).json({
-                success: false,
-                message: `Role (${req.user.role}) is not authorized to access this resource`,
+            return res.status(403).json({ 
+                success: false, 
+                message: `Your role '${req.user ? req.user.role : 'None'}' is not authorized to access this feature!` 
             });
         }
         next();
     };
 };
-
-module.exports = { protect, authorize };
