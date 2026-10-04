@@ -20,7 +20,6 @@ const app = express();
 app.use(express.json());
 app.use(corsMiddleware());
 
-// Mount All Final Production Ready Application Routing Segments Networks Core Framework Hooks
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
@@ -30,7 +29,6 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/export', exportRoutes);
 
-// Master Base Test Pipeline Route Entry Hook
 app.get('/api/test', (req, res) => {
   res.status(200).json({ 
     success: true, 
@@ -40,7 +38,5 @@ app.get('/api/test', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`==================================================================`.green.bold);
-  console.log(`🚀 MASTER BACKEND SERVER FULLY OPERATIONAL ON DEPLOYMENT PORT ${PORT}`.green.bold);
-  console.log(`==================================================================`.green.bold);
+  console.log(`Server is running on port http://localhost:${PORT}`.green.bold);
 });
