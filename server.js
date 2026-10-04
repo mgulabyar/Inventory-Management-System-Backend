@@ -30,5 +30,5 @@ app.get('/api/test', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server active on port ${PORT}`.yellow.bold);
+  console.log(`Server active on port ${PORT}`);
 });
