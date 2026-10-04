@@ -21,9 +21,9 @@ const createOrder = async (req, res) => {
       }
 
       if (product.quantity < item.quantitySold) {
-        return res.status(400).json({ 
-          success: false, 
-          message: `Insufficient stock for ${product.name}. Available: ${product.quantity}, Requested: ${item.quantitySold}` 
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${product.name}. Available: ${product.quantity}, Requested: ${item.quantitySold}`
         });
       }
 
@@ -39,15 +39,15 @@ const createOrder = async (req, res) => {
 
     // 2. Financial mathematics deductions
     const flatDiscount = discount || 0;
-    const flatTaxRate = taxRate || 0; 
+    const flatTaxRate = taxRate || 0;
     const calculatedTax = parseFloat(((subTotal - flatDiscount) * (flatTaxRate / 100)).toFixed(2));
     const finalBillAmount = parseFloat((subTotal - flatDiscount + calculatedTax).toFixed(2));
 
     // 3. OUTWARD TRIGGER: Auto decrement stock records from database safely
     for (let item of items) {
       const product = await Product.findById(item.product);
-      product.quantity -= item.quantitySold; 
-      product.isLowStock = product.quantity <= product.lowStockThreshold; 
+      product.quantity -= item.quantitySold;
+      product.isLowStock = product.quantity <= product.lowStockThreshold;
       await product.save();
     }
 
@@ -56,7 +56,7 @@ const createOrder = async (req, res) => {
 
     // 5. Save finalized checkout sale voucher
     const order = await Order.create({
-      cashier: activeCashierId, 
+      cashier: activeCashierId,
       customerName,
       items: processedItems,
       subTotal,
@@ -75,9 +75,19 @@ const createOrder = async (req, res) => {
 // @desc    Get all sales orders history (READ ALL)
 const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({})
+    const rawOrders = await Order.find({})
       .populate('cashier', 'name role')
       .populate('items.product', 'name sku sellingPrice');
+
+    // DYNAMIC TRIGGER FALLBACK: Null population mapping logic
+    const orders = rawOrders.map(order => {
+      const orderObj = order.toObject();
+      if (!orderObj.cashier) {
+        orderObj.cashier = { name: "Super Admin", role: "SuperAdmin" };
+      }
+      return orderObj;
+    });
+
     res.status(200).json({ success: true, count: orders.length, data: orders });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -90,8 +100,15 @@ const getOrderById = async (req, res) => {
     const order = await Order.findById(req.params.id)
       .populate('cashier', 'name role')
       .populate('items.product', 'name sku sellingPrice');
+
     if (!order) return res.status(404).json({ success: false, message: 'Sales invoice voucher not found' });
-    res.status(200).json({ success: true, data: order });
+
+    const orderObj = order.toObject();
+    if (!orderObj.cashier) {
+      orderObj.cashier = { name: "Super Admin", role: "SuperAdmin" };
+    }
+
+    res.status(200).json({ success: true, data: orderObj });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
