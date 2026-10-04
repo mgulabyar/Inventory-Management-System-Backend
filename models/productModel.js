@@ -48,10 +48,4 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Mongoose pre-save trigger: Automatic low stock evaluation flag logic
-productSchema.pre('save', function (next) {
-  this.isLowStock = this.quantity <= this.lowStockThreshold;
-//   next();
-});
-
 module.exports = mongoose.model('Product', productSchema);
